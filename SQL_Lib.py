@@ -71,6 +71,23 @@ class change():
             v=eval("self."+listType+"(v)")+self.comma
             formatedList+=v
         return formatedList
+    def multiLists(self,v,listType): #where v is any list with inner lists. Returns psql string that allows for inserting multiple rows at once. Ex: [[1,2,3],[3,2,1]] --> (1,3),(2,2),(3,1)
+        longest_list = max(len(elem) for elem in v)
+        for i in range(v):
+            v[i]=self.__toList2(v[i],listType)
+            diff=len(longest_list)-len(v[i])
+            for j in diff:
+                v[i].append(None)
+        for i in range(v[0]):
+            v1+='('
+            for j in range(len(v))
+                v1+=v[j][i]+','
+            v1=v1[:-1]+'),'
+        v1=v1[:-1]
+        return(v1)
+            
+            
+            
             
 
     
