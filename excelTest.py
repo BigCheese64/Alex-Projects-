@@ -4,8 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.cbook as cbook
+import psycopg2
 from apiclient.discovery import build
 from selenium import webdriver
+
 
 class youTubeInfo():
     def __init__(self,channelId):
@@ -86,7 +88,20 @@ class twitterInfo():
         self.tweetDates=newDates
             
 
-
+class sqlLogger():
+    def __init__(self,_database,_user,_password,_host,_port):
+        self.conn=psycopg2.connect(database=_database,user=_user,password=_password,host=_host,port=_port)
+        self.cur=con.cursor()
+    def log(self,table,items):
+        query=''
+        for i in items:
+            query+= i + ','
+        query=query[:-1]
+        self.cur.execute('INSERT INTO '+table+ ' VALUES ('+query+');')
+        self.conn.commit()
+    def close(self):
+        conn.close()
+        
         
 def graphData(y1,x2,y2):
     graph1=plt.plot(range(len(y1)),y1)
