@@ -23,7 +23,7 @@ class dataLearner():
         self.pairedLists=[]
         self.deltaTime=[]
     def sqlGrabber(self,columnName):
-        self.cur.execute('SELECT '+columnName+' FROM '+self.table)
+        self.cur.execute('SELECT '+columnName.lower()+' FROM '+self.table)
         eval('self.'+columnName+'=self.cur.fetchall()')   #Ask likith if there is a less gross way of doing this
 
 

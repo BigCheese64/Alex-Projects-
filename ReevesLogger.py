@@ -95,24 +95,40 @@ class sqlLogger():
         
         self.conn=psycopg2.connect(database=_database,user=_user,password=_password,host=_host,port=_port)
         self.cur=con.cursor()
-    def log(self,table,items):
+    def log(self,table,column,items):
         query=''
         for i in items:
             query+= i + ','
         query=query[:-1]
-        self.cur.execute('INSERT INTO '+table+ ' VALUES ('+query+');')
+        self.cur.execute('INSERT INTO '+table+' ('+column+') VALUES ('+query+');')
         self.conn.commit()
+        
+    def sqlGrabber(self,columnName):
+        self.cur.execute('SELECT '+columnName.lower()+' FROM '+self.table)
+        eval('self.'+columnName+'=self.cur.fetchall()')
+        
     def close(self):
         self.cur.close()
         self.conn.close()
 
+
 if __name__=="__main__":
     yTi=youTubeInfo('UCtHaxi4GTYDpJgMSGy7AeSw')
-    yTi.getDates()
-    yTi.parseDates()
-
-
     tI=twitterInfo()
-    tI.getTweets()
-    tI.parseDates()
+    
+    config = cp.ConfigParser()
+    config.read("ReevesSQL.ini")
+
+    sql=sqlLogger(config)
+    while True:
+        yTi.getDates()
+        newYTdates=yTi.parseDates()
+        oldYTdates=sql.sqlGrabber('youtubeStamps')
+        sql.log(list(set(newYTdates)-set(oldYTdates)).sort())
+        
+        tI.getTweets()
+        newTdates=tI.parseDates()
+        oldTdates=sql.sqlGrabber('twitterStamps')
+        sql.log(list(set(newTdates)-set(oldTdates)).sort())
+        time.sleep(config['SETTINGS']['sleeptime'])
 
