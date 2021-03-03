@@ -14,17 +14,17 @@ class youTubeInfo():
         self.dates=[]
         self.timeStamps=[]
     def getDates(self):
-        uploads=self.youtube.channels().list(part="contentDetails",id=self._channelId).execute()['items'][0]['contentDetails']['relatedPlaylists']['uploads']
-        uploadItems=self.youtube.playlistItems().list(part="snippet",maxResults=50,playlistId=uploads).execute()['items']
+        uploads=self.youtube.channels().list(part="contentDetails",id=self._channelId).execute()['items'][0]['contentDetails']['relatedPlaylists']['uploads'] #Gets channel upload playlist id
+        uploadItems=self.youtube.playlistItems().list(part="snippet",maxResults=50,playlistId=uploads).execute()['items'] #Gets all info on all videos in uploads playlist
         for i in uploadItems:
-            self.dates.append(i['snippet']['publishedAt'])
+            self.dates.append(i['snippet']['publishedAt']) #Get date of each video
     def parseDates(self):
         newDates=[]
         pattern='%Y-%m-%dT%H:%M:%SZ'
         for i in self.dates:
             date=datetime.datetime.strptime(i,pattern)
             newDates.append(date)
-            self.timeStamps.append(datetime.datetime.timestamp(date))
+            self.timeStamps.append(datetime.datetime.timestamp(date)) #Converts date into unix timestamp
         self.dates=newDates
 
 class twitterInfo():
