@@ -73,21 +73,27 @@ class change():
         return formatedList
     def multiLists(self,v,listType): #where v is any list with inner lists. Returns psql string that allows for inserting multiple rows at once. Ex: [[1,2,3],[3,2,1]] --> (1,3),(2,2),(3,1)
         longest_list = max(len(elem) for elem in v)
-        for i in range(v):
-            v[i]=self.__toList2(v[i],listType)
-            diff=len(longest_list)-len(v[i])
-            for j in diff:
+        for i in range(len(v)):
+            #v[i]=self.__toList2(v[i],listType)
+            diff=longest_list-len(v[i])
+            for j in range(diff):
                 v[i].append(None)
-        for i in range(v[0]):
-            v1+='('
-            for j in range(len(v))
-                v1+=v[j][i]+','
+        v2=''
+        for i in range(len(v[0])):
+            v1='('
+            for j in range(len(v)):
+                v1+=self.__toList2(v[j][i],listType)
             v1=v1[:-1]+'),'
-        v1=v1[:-1]
-        return(v1)
+            v2+=v1
+        v2=v2[:-1]
+        return(v2)
             
             
             
-            
+if __name__=='__main__':
+    v=[[5,6,[4,5],8],[8,7,6,5]]
+        
+    print(change().multiLists(v,'toFloat'))
+    
 
     

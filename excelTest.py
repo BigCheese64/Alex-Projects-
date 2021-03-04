@@ -1,11 +1,5 @@
-import time
-import datetime
-import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import matplotlib.cbook as cbook
 import psycopg2
-import configparser as cp
 
 class dataLearner():
     def __init__(self,conf):
@@ -14,9 +8,8 @@ class dataLearner():
         _password=str(conf['SQL']['password'])
         _host=str(conf['SQL']['host'])
         _port=str(conf['SQL']['port'])
-        _table=str(conf['SQL']['table'])
         self.conn=psycopg2.connect(database=_database,user=_user,password=_password,host=_host,port=_port)
-        self.cur=con.cursor()
+        self.cur=self.conn.cursor()
 
         self.twitterStamps=[]
         self.youtubeStamps=[]
@@ -38,7 +31,7 @@ class dataLearner():
             
 
                 
-    def parseData(self,):
+    def parseData(self):
         self.twitterStamps.sort()
         self.youtubeStamps.sort()
         _twitterStamps=self.twitterStamps
@@ -58,7 +51,7 @@ class dataLearner():
                 
         self.pairedLists=slicedLists
 
-    def findDeltaT():
+    def findDeltaT(self):
         x=-1
         for i in self.pairedLists:
             x+=1
@@ -66,8 +59,7 @@ class dataLearner():
             self.deltaT.append([])
             for j in range(len(self.pairedLists[i])-1):
                 self.deltaT[x].append(self.pairedLists[i][j+1]-self.pairedLists[i][j])
-        return(deltaT)
-
+    
 
     def close(self):
         self.cur.close()

@@ -1,14 +1,14 @@
 import time
 import datetime
-import numpy as np
 import psycopg2
 from apiclient.discovery import build
 from selenium import webdriver
+from SQL_Lib import change
 import configparser as cp
 
 class youTubeInfo():
     def __init__(self,channelId):
-        DEVELOPER_KEY = "AIzaSyCnPFkconfEDypwWconfkYCztNosU0-kGFwKoE"
+        DEVELOPER_KEY = "AIzaSyAsnsLTdbAc98BgcldHo4Th68uprwjp2Js"
         self.youtube = build('youtube', 'v3', developerKey=DEVELOPER_KEY)
         self._channelId=channelId
         self.dates=[]
@@ -26,14 +26,15 @@ class youTubeInfo():
             newDates.append(date)
             self.timeStamps.append(datetime.datetime.timestamp(date)) #Converts date into unix timestamp
         self.dates=newDates
+        print(self.timeStamps)
 
 class twitterInfo():
-    def __init__(self):
+    def __init__(self,conf):
         self.tweetDates=[]
         self.driver=webdriver.Firefox()
         self.timeStamps=[]
-        self.timeout=15
-        self.loadTime=30
+        self.timeout=int(conf['TWITTER']['timeout']) #15
+        self.loadTime=int(conf['TWITTER']['loadtime'])#30
     def getTweets(self):
         SCROLL_PAUSE_TIME = 0.5
         self.driver.get('https://twitter.com/michaelreeves')
@@ -92,43 +93,51 @@ class sqlLogger():
         _password=str(conf['SQL']['password'])
         _host=str(conf['SQL']['host'])
         _port=str(conf['SQL']['port'])
-        
+        self.table=str(conf['SQL']['table'])        
         self.conn=psycopg2.connect(database=_database,user=_user,password=_password,host=_host,port=_port)
-        self.cur=con.cursor()
-    def log(self,table,column,items):
-        query=''
-        for i in items:
-            query+= i + ','
-        query=query[:-1]
-        self.cur.execute('INSERT INTO '+table+' ('+column+') VALUES ('+query+');')
+        self.cur=self.conn.cursor()
+    def log(self,l1,l2):
+        query=change.multiLists(self,[l1,l2],'toFloat')
+        self.cur.execute('INSERT INTO '+self.table+' VALUES ('+query+');')
         self.conn.commit()
         
     def sqlGrabber(self,columnName):
         self.cur.execute('SELECT '+columnName.lower()+' FROM '+self.table)
-        eval('self.'+columnName+'=self.cur.fetchall()')
+        if columnName.lower()=='youtubestamps':
+            self.youtubeStamps = self.cur.fetchall()
+        elif columnName.lower()=='twitterstamps':
+            self.twitterStamps=self.cur.fetchall()
         
     def close(self):
         self.cur.close()
         self.conn.close()
 
 
-if __name__=="__main__":
-    yTi=youTubeInfo('UCtHaxi4GTYDpJgMSGy7AeSw')
-    tI=twitterInfo()
-    
+if __name__=="__main__": 
     config = cp.ConfigParser()
     config.read("ReevesSQL.ini")
-
+    yTi=youTubeInfo('UCtHaxi4GTYDpJgMSGy7AeSw')
+    tI=twitterInfo(config)
     sql=sqlLogger(config)
     while True:
         yTi.getDates()
-        newYTdates=yTi.parseDates()
+        yTi.parseDates()
+        newYTdates=yTi.timeStamps
         oldYTdates=sql.sqlGrabber('youtubeStamps')
-        sql.log(list(set(newYTdates)-set(oldYTdates)).sort())
+        if oldYTdates!=None:
+            l1=list(set(newYTdates)-set(oldYTdates)).sort()
+        else:
+            l1=newYTdates
         
         tI.getTweets()
-        newTdates=tI.parseDates()
+        tI.parseDates()
+        newTdates=tI.timeStamps
         oldTdates=sql.sqlGrabber('twitterStamps')
-        sql.log(list(set(newTdates)-set(oldTdates)).sort())
-        time.sleep(config['SETTINGS']['sleeptime'])
+        if oldTdates!=None:
+            l2=list(set(newTdates)-set(oldTdates)).sort()
+        else:
+            l2=newTdates
+        sql.log(l1,l2)
+        break
+        time.sleep(int(config['SETTINGS']['sleeptime']))
 
