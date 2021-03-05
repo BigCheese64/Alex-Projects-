@@ -1,10 +1,10 @@
 import time
 import datetime
 import psycopg2
+import configparser as cp
 from apiclient.discovery import build
 from selenium import webdriver
 from SQL_Lib import change
-import configparser as cp
 
 class youTubeInfo():
     def __init__(self,channelId):
@@ -97,8 +97,8 @@ class sqlLogger():
         self.conn=psycopg2.connect(database=_database,user=_user,password=_password,host=_host,port=_port)
         self.cur=self.conn.cursor()
     def log(self,l1,l2):
-        query=change.multiLists(self,[l1,l2],'toFloat')
-        self.cur.execute('INSERT INTO '+self.table+' VALUES ('+query+');')
+        query=change().multiLists([l1,l2],'toFloat')
+        self.cur.execute('INSERT INTO '+self.table+' (youtubestamps,twitterstamps) VALUES '+query+';')
         self.conn.commit()
         
     def sqlGrabber(self,columnName):
@@ -114,6 +114,8 @@ class sqlLogger():
 
 
 if __name__=="__main__": 
+    v=[[5,6,[4,5],8],[8,7,6,5]]
+    change().multiLists(v,'toFloat')
     config = cp.ConfigParser()
     config.read("ReevesSQL.ini")
     yTi=youTubeInfo('UCtHaxi4GTYDpJgMSGy7AeSw')
@@ -141,3 +143,4 @@ if __name__=="__main__":
         break
         time.sleep(int(config['SETTINGS']['sleeptime']))
 
+#1596039725.0
