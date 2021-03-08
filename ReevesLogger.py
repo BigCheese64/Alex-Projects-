@@ -114,8 +114,6 @@ class sqlLogger():
 
 
 if __name__=="__main__": 
-    v=[[5,6,[4,5],8],[8,7,6,5]]
-    change().multiLists(v,'toFloat')
     config = cp.ConfigParser()
     config.read("ReevesSQL.ini")
     yTi=youTubeInfo('UCtHaxi4GTYDpJgMSGy7AeSw')

@@ -87,7 +87,20 @@ class change():
         v2=v2[:-1]
         return(v2)
             
-            
+class revert():
+    def toString(self,v):
+        return str(v)
+    def toInt(self,v):
+        return int(v)
+    def toBool(self,v):
+        return bool(str(v).lower())
+    def toFloat(self,v):
+        return(float(v))
+    def toHex(self,v):
+        return(hex(v)) ##Dont know if this will work?
+    def toDateTime(self,v):
+        print() ##Not sure
+                    
             
 if __name__=='__main__':
     v=[[5,6,[4,5],8],[8,7,6,5]]

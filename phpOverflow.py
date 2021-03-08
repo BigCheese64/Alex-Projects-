@@ -1,41 +1,62 @@
-import requests
-import os
 import yfinance
-bigvar='I LIKE BREAD'
-
-#bigvar=str(os.urandom(1000000))
-#hi=requests.get('http://184.56.71.178')
-hi=requests.post('http://184.56.71.178',{'username':str(bigvar),'submin':'Submit'})
-requests.get('http://184.56.71.178')
-print(hi)
-
+import time
+import psycopg2
+import configparser as cp
+import tweepy
 class muskTweets():
-    def __init__(self,keywords,cp):
-        self._keywords=keywords
+    def __init__(self,conf):
         self.tweet=''
         self.checkStocksLater=[] #['name','timestamp','hour_ago','now_price','hour_later']
         self.currentStock
-        self.psqlUsername=str(self.cp['SQL']['user'])
-        self.psqlPassword=str(self.cp['SQL']['password'])
-        self.psqlHost=str(self.cp['SQL']['host'])
-        self.psqlDatabase=str(self.cp['SQL']['database'])
-
+        _database=str(conf['SQL']['database'])
+        _user=str(conf['SQL']['user'])
+        _password=str(conf['SQL']['password'])
+        _host=str(conf['SQL']['host'])
+        _port=str(conf['SQL']['port'])
+        self.table=str(conf['SQL']['table'])        
+        self.conn=psycopg2.connect(database=_database,user=_user,password=_password,host=_host,port=_port)
+        self.cur=self.conn.cursor()
+        _consumer_key=str(conf['TWITTER']['consumer_key'])
+        _consumer_secret=str(conf['TWITTER']['consumer_secret'])
+        _access_token=str(conf['TWITTER']['access_token'])
+        _access_token_secret=str(conf['TWITTER']['access_token_secret'])
+        self.id=str(conf['TWITTER']['access_token_secret'])
+        self.auth = tweepy.OAuthHandler(_consumer_key, _consumer_secret)
+        self.auth.set_access_token(_access_token, _access_token_secret)
+        self.api = tweepy.API(self.auth)
+        self.keywords=[]
+        self.ticker=[]
+        self.tweet=''
+        
     def checkTweet(self):
-        twitterApi=''
+        self.tweet=self.api.user_timeline(id=self.id,count=1)
+        if self.tweet==self.lastTweet:
+            return False
+        else:
+            return True
+        
+    def getKeyword(self):
+        self.cur.execute('SELECT keywords FROM '+self.table)
+        self.keywords=self.cur.fetchall()
+        self.cur.execute('SELECT tickers FROM '+ self.table)
+        self.tickers=self.cur.fetchall()
+              
 
+        
     def parseTweet(self):
         wordList=self.tweet.split(' ')
         for i in wordList:
-            if i in self._keywords:
+            if i in self.keywords:
+                ticker=self.tickers[self.keywords.index(i)]
                 stockNow=self.stockMarket(i,time.time())
                 stockHourAgo=self.stockMarket(i,time.time()-3600)
-                self.checkStocksLater.append([i,time.time(),stockHourAgo,stockNow])
+                self.checkStocksLater.append([ticker,i,time.time(),stockHourAgo,stockNow])
                 
                 
                 
     def stockMarket(self,what,when):
-        ticketData=yfinance.Ticker(what)
-        tickerDf=tickerData.history(period='1d',when)
+        tickerData=yfinance.Ticker(what)
+        tickerDf=tickerData.history(when,period='1d')
         return(tickerDf)
         #check price at time
 
@@ -50,19 +71,17 @@ class muskTweets():
         for i in removeList:
             self.checkStocksLater.remove(i)
                 
-    def sqlLogger(self,passedList)
-        conn=psycopg2.connect(self.psqlHost,self.psqlDatabase,self.psqlUser,self.psqlPassword)
-        cur=conn.cursor()
+    def sqlLogger(self,passedList):
         cmd=''
         for i in passedList:
             cmd+=i+','
         cmd=cmd[:-1]
-        cur.execute('INSERT INTO '+where+'('+cmd+')')
+        self.cur.execute('INSERT INTO '+self.table+'('+cmd+')')
         
     def run(self):
-        while True:
-            self.checkTweet()
-            self.parseTweet()
-            self.checkLater()
-            
+        while True:            
+            if(self.checkTweet()):
+                self.parseTweet()
+                self.checkLater()
+                
         

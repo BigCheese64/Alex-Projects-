@@ -42,28 +42,6 @@ class dataLearner():
         plt.gcf()
         plt.show()
             
-
-    """                
-    def parseData(self):
-        self.twitterStamps.sort()
-        self.youtubeStamps.sort()
-        _twitterStamps=self.twitterStamps
-        _youtubeStamps=self.twitterStamps
-        slicedLists={}
-        lastDate=0
-        for i in _youtubeStamps:
-            slicedLists[i]=[]
-            for j in _twitterStamps:
-                if j<=i:
-                    slicedLists[i].append(j)
-                    lastDate=j
-            if lastDate!=0:
-                print('hi')
-                _twitterStamps=_twitterStamps[_twitterStamps.index(lastDate)+1:]
-                lastDate=0
-                
-        self.pairedLists=slicedLists
-    """
     
     def deltaT(self):
       #print(self.youtubeStamps)
