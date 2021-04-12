@@ -23,8 +23,8 @@ class verification_email():
         text = msg.as_string()
         server.sendmail(self.fromaddr, self._toaddr, text)
         server.quit()
-
-verfication_email(sys.argv[1],sys.argv[2]).send_email()
+if __name__=="__main__": #not sure if this will work since node is calling it as a subprocess but it's good practice
+    verfication_email(sys.argv[1],sys.argv[2]).send_email()
 
 """
 const spawn = require("child_process").spawn;
